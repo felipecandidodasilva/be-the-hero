@@ -5,7 +5,7 @@ module.exports = {
 // async, faz a função se assincrona
     async index(request, response) {
         const ongs = await conn('ongs').select('*');
-        return response.json({ongs})
+        return response.json(ongs);
     },
 
     async create(request, response){

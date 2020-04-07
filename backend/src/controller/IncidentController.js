@@ -17,7 +17,7 @@ module.exports = {
 
         const incidents = await conn('incidents')
         .join('ongs', 'ongs.id', '=', 'incidents.ong_id') // junta com a tabela ongs
-        .limit(5) // vai limitar a 5 registro
+        .limit(4) // vai limitar a 5 registro
         .offset((page -1) * 5) // pular de 5 em 5 a partir da pagina pedida
         .select(['incidents.*',
          'ongs.name',
@@ -26,7 +26,7 @@ module.exports = {
          'ongs.whatsapp',
          'ongs.city',
          'ongs.uf']);
-        return response.json({incidents});
+        return response.json(incidents);
     },
 
     async create(request,response){

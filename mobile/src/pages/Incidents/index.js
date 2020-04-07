@@ -13,12 +13,30 @@ import styles from './styles'; // nome aqui se chama styles por conta de conflit
 export default function Incidents() {
     const navigation = useNavigation();
     const [incidents, setIncidents] = useState([]);
-    const [test, setTest] = useState([]);
+    const [total, setTotal] = useState([]);
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(false);
     
     async function loadIncidents() {
-        const response = await api.get('incidents');
-        setIncidents(response.data); 
+        // caso ele esteja carregando não executa mais nada
+        if(loading) {
+            return;
+        };
+        // caso já tenha chegado ao final dos registros, também não carrega mais
+        if(total > 0 && incidents.lengh === total) {
+            return;
+        }
 
+        setLoading(true);
+
+        const response = await api.get('incidents', {
+            params: { page }
+        });
+        
+        setIncidents([...incidents, ...response.data]); 
+        setTotal(response.headers['x-total-count']);
+        setPage(page +1);
+        setLoading(false);
     }
 /**
  * useEffect vai disparar uma função quando alguma variavel dele mudar
@@ -28,17 +46,18 @@ useEffect(() => {
     loadIncidents();
 }, []); 
 
-    function navigatetoDetail() {
-        navigation.navigate('Detail');
+    function navigatetoDetail(incident) {
+        navigation.navigate('Detail',{incident});
     }; 
+
+
 
     return (
        <View style={ styles.container }>
-           
            <View style={ styles.header }>
                <Image source={logoImg} />
                <Text style={ styles.headerText } >
-                   Total de <Text style={ styles.headetTextBold} > 0 casos. </Text>
+                   Total de <Text style={ styles.headetTextBold} >{total} casos. </Text>
                 </Text>
            </View>
            <Text style={styles.title}> Bem-vindo!</Text>
@@ -49,20 +68,27 @@ useEffect(() => {
             style={styles.incidentList}
             keyExtractor={incident => String(incident.id)}
             showsVerticalScrollIndicator={false}
-            renderItem={ ({ item: incident }) => (
+            onEndReached={loadIncidents}
+            onEndReachedThreshold={0.2}
+            renderItem={ ({item: incident}) => (
                 <View style={styles.incident}>
-                    <Text  style={styles.incidentProperty}>ONG:</Text>
-                    <Text style={styles.incidentValue}>{incident.name}</Text>
+                    <Text style={[styles.incidentProperty, {marginTop: 0 }]}>ONG:</Text>
+            <Text style={styles.incidentValue}>{incident.name}</Text>
 
                     <Text style={styles.incidentProperty}>CASO:</Text>
-                    <Text style={styles.incidentValue}>{incident.title}</Text>
+                    <Text style={styles.incidentValue}>{incident.description}</Text>
 
                     <Text style={styles.incidentProperty}>VALOR:</Text>
-                    <Text style={styles.incidentValue}>{incident.value}</Text>
+                    <Text style={styles.incidentValue}>
+                        { Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                        }).format(incident.value)}
+                    </Text>
                     
                     <TouchableOpacity 
                     style={styles.detailsButton} 
-                    onPress={navigatetoDetail}
+                    onPress={() => navigatetoDetail(incident)}
                     >
                         <Text style={styles.detailsButtonText}>
                             Ver mais detalhes
