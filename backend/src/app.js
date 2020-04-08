@@ -1,5 +1,8 @@
 const express = require('express'); // simples assim o node entende que é um pacote
 const cors = require('cors'); // segurança NPM INSTALL CORS
+// tratando os erros
+const { errors }  = require('celebrate');
+
 const routes = require('./routes'); // com ./ o node entende que é arquivo
 
 // para voltar uma pasta usa-se ../, quando unsa ./ sozinho ele referencia a pasta atual
@@ -15,4 +18,5 @@ app.use(cors());
 app.use(express.json()); 
 
 app.use(routes);
-app.listen(3333);  
+app.use(errors());
+module.exports = app;
